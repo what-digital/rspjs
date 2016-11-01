@@ -1,0 +1,126 @@
+<html>
+
+<body>
+    <script>
+        // a full fledged teaser control system loaded with system.js
+        
+        Promise.all([
+            System.import('rspjs')
+        ]).then(function() {
+            var teaser_control = {
+                wide_horizontal: function() {
+                    log("wide_horizontal");
+                    var sliders = jQuery('.teaser-wrapper.medium .slider, .teaser-wrapper.wide .slider');
+                    var that = this;
+                    sliders.each(function() {
+                        var cls_content = jQuery(this).find('.content');
+                        var cls_main = cls_content.find('.main');
+                        var height = parseInt(cls_main.outerHeight(true)) + parseInt(cls_content.css('padding-bottom'));
+                        var css_height = (-1 * height) + 'px';
+                        cls_content.css({
+                            bottom: css_height
+                        });
+                        log(css_height);
+                        jQuery(this).css({
+                            bottom: 0
+                        })
+                    });
+                },
+                wide_horizontal_init: function() {
+                    var that = this;
+                    var sliders = jQuery('.teaser-wrapper.medium .slider, .teaser-wrapper.wide .slider');
+                    jQuery(window)
+                        .off('resize', that.wide_horizontal)
+                        .off('resize', that.wide_vertical);
+                    // http://api.jquery.com/hover/
+                    sliders.off('mouseenter mouseleave');
+                    jQuery(window).on('resize', that.wide_horizontal);
+                    sliders.hover(function() {
+                        jQuery(this).find('.slider-background').toggleClass('enlarge');
+                        jQuery(this).find('.content').toggleClass('moveup');
+                    });
+                },
+                wide_vertical: function() {
+                    log("wide_vertical");
+                    var sliders = jQuery('.teaser-wrapper.medium .slider, .teaser-wrapper.wide .slider');
+                    var that = this;
+                    sliders.each(function() {
+                        var box = jQuery(this);
+                        var hidden_part = box.find('.main');
+                        var height = parseInt(hidden_part.outerHeight(true)) + parseInt(box.find('.content').css('padding-bottom'));
+                        var css_height = (-1 * height) + 'px';
+                        box.css({
+                            bottom: css_height
+                        });
+                        box.find('.content').css({
+                            bottom: 0
+                        })
+                    });
+                },
+                wide_vertical_init: function() {
+                    var that = this;
+                    var sliders = jQuery('.teaser-wrapper.medium .slider, .teaser-wrapper.wide .slider');
+                    // http://api.jquery.com/hover/
+                    sliders.off('mouseenter mouseleave');
+                    jQuery(window)
+                        .off('resize', that.wide_vertical)
+                        .off('resize', that.wide_horizontal);
+                    sliders.hover(function() {
+                        jQuery(this).toggleClass('moveup');
+                    });
+                    jQuery(window)
+                        .on('resize', that.wide_vertical);
+                },
+                always_vertical: function() {
+                    log("always_vertical");
+                    var sliders = jQuery('.teaser-wrapper.narrow .slider');
+                    var that = this;
+                    sliders.each(function() {
+                        var box = jQuery(this);
+                        var hidden_part = box.find('.main');
+                        var height = parseInt(hidden_part.outerHeight(true)) + parseInt(box.find('.content').css('padding-bottom'));
+                        var css_height = (-1 * height) + 'px';
+                        box.css({
+                            bottom: css_height
+                        });
+                    });
+                },
+                always_vertical_init: function() {
+                    var that = this;
+                    var sliders = jQuery('.teaser-wrapper.narrow .slider');
+                    sliders.hover(function() {
+                        jQuery(this).toggleClass('moveup');
+                    });
+                    jQuery(window).on('resize', that.always_vertical);
+                }
+            };
+            // need to load web fonts before trying to 'guess' heights
+            jQuery(window).bind('load', function() {
+                teaser_control.always_vertical_init();
+                teaser_control.always_vertical();
+                // initial state, we use rspjs directly
+                if (rspjs.current_bkp.cls == 'rsp-very-large' || rspjs.current_bkp.cls == 'rsp-large') {
+                    log('wide horizontal!');
+                    teaser_control.wide_horizontal_init();
+                    teaser_control.wide_horizontal();
+                } else {
+                    teaser_control.wide_vertical_init();
+                    teaser_control.wide_vertical();
+                }
+            });
+            // on resize we use custom events
+            jQuery(document).on('rsp-medium>rsp-large', function() {
+                log('wide horizontal!');
+                teaser_control.wide_horizontal_init();
+                teaser_control.wide_horizontal();
+            });
+            jQuery(document).on('rsp-large>rsp-medium', function() {
+                log('wide_vertical');
+                teaser_control.wide_vertical_init();
+                teaser_control.wide_vertical();
+            })
+        });
+    </script>
+</body>
+
+</html>
